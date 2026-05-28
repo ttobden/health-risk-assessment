@@ -8,10 +8,47 @@
 </head>
 <body>
 
+<!-- ── HEADER ─────────────────────────────────────────────────── -->
 <header class="site-header">
-  <h1>Health Risk Assessment</h1>
-  <p class="tagline">CSA203 · Group 5 · AI B</p>
+  <div class="header-bg-circles">
+    <span class="hbc hbc-1"></span>
+    <span class="hbc hbc-2"></span>
+    <span class="hbc hbc-3"></span>
+  </div>
+  <div class="header-inner">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <h1>Health Risk Assessment</h1>
+    <p class="tagline">CSA203 &middot; Group 5 &middot; AI B</p>
+  </div>
 </header>
+
+<!-- ── HERO ───────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-cards">
+    <div class="hero-stat-card">
+      <span class="hero-stat-icon hero-icon-diabetes" aria-hidden="true"></span>
+      <span class="hero-stat-label">Diabetes</span>
+    </div>
+    <div class="hero-stat-card">
+      <span class="hero-stat-icon hero-icon-hypertension" aria-hidden="true"></span>
+      <span class="hero-stat-label">Hypertension</span>
+    </div>
+    <div class="hero-stat-card">
+      <span class="hero-stat-icon hero-icon-heart" aria-hidden="true"></span>
+      <span class="hero-stat-label">Heart Disease</span>
+    </div>
+  </div>
+  <h2 class="hero-title">Know Your Risk Before It Knows You</h2>
+  <p class="hero-sub">Answer 5 quick sections about your health. Our AI model analyses your lifestyle,
+  vitals, and history to estimate your risk for three major conditions — in seconds.</p>
+  <div class="hero-badges">
+    <span class="hero-badge">&#8203; Private &amp; secure</span>
+    <span class="hero-badge">&#8203; Instant results</span>
+    <span class="hero-badge">&#8203; ML-powered</span>
+  </div>
+</section>
 
 <div class="page">
 
@@ -58,8 +95,9 @@
   <form action="/predict" method="POST" id="assessment-form" novalidate>
 
     <!-- ── Step 1: Personal Information ──────────────── -->
-    <div class="form-section" id="section-0">
+    <div class="form-section slide-in" id="section-0">
       <div class="section-head">
+        <span class="section-icon section-icon--person" aria-hidden="true"></span>
         <h2>Personal Information</h2>
       </div>
       <div class="form-grid">
@@ -109,11 +147,11 @@
     <!-- ── Step 2: Vitals & Body ──────────────────────── -->
     <div class="form-section hidden" id="section-1">
       <div class="section-head">
+        <span class="section-icon section-icon--vitals" aria-hidden="true"></span>
         <h2>Vitals &amp; Body</h2>
       </div>
       <div class="form-grid">
 
-        <!-- BMI calculator: height + weight → auto-fill hidden bmi field -->
         <div class="field">
           <label for="height_cm">Height <span class="unit">cm</span></label>
           <input type="number" id="height_cm" min="100" max="220" step="0.5"
@@ -126,7 +164,6 @@
                  placeholder="e.g. 70" oninput="calcBMI()">
         </div>
 
-        <!-- Read-only BMI display; hidden input carries the value -->
         <div class="field">
           <label>BMI <span class="unit">auto-calculated</span></label>
           <div class="bmi-display" id="bmi-display">—</div>
@@ -161,6 +198,7 @@
     <!-- ── Step 3: Blood Work ─────────────────────────── -->
     <div class="form-section hidden" id="section-2">
       <div class="section-head">
+        <span class="section-icon section-icon--blood" aria-hidden="true"></span>
         <h2>Blood Work</h2>
       </div>
       <p class="section-note">Enter values from your most recent blood test.</p>
@@ -228,6 +266,7 @@
     <!-- ── Step 4: Lifestyle ──────────────────────────── -->
     <div class="form-section hidden" id="section-3">
       <div class="section-head">
+        <span class="section-icon section-icon--lifestyle" aria-hidden="true"></span>
         <h2>Lifestyle</h2>
       </div>
       <div class="form-grid">
@@ -282,6 +321,7 @@
     <!-- ── Step 5: Medical History ────────────────────── -->
     <div class="form-section hidden" id="section-4">
       <div class="section-head">
+        <span class="section-icon section-icon--history" aria-hidden="true"></span>
         <h2>Medical History</h2>
       </div>
       <div class="form-grid">
@@ -344,36 +384,38 @@
   const TOTAL = 5;
 
   function showStep(n) {
-    // Sections
     document.querySelectorAll('.form-section').forEach((s, i) => {
-      s.classList.toggle('hidden', i !== n);
+      if (i === n) {
+        s.classList.remove('hidden');
+        s.classList.add('slide-in');
+        void s.offsetWidth; // reflow to re-trigger animation
+        s.classList.remove('slide-in');
+        void s.offsetWidth;
+        s.classList.add('slide-in');
+      } else {
+        s.classList.add('hidden');
+        s.classList.remove('slide-in');
+      }
     });
-    // Step indicators
     document.querySelectorAll('.wstep').forEach((s, i) => {
       s.classList.remove('active', 'completed');
-      if (i === n)      s.classList.add('active');
-      if (i < n)        s.classList.add('completed');
+      if (i === n) s.classList.add('active');
+      if (i < n)   s.classList.add('completed');
     });
-    // Lines
     document.querySelectorAll('.wstep-line').forEach((l, i) => {
       l.classList.toggle('completed', i < n);
     });
-    // Progress bar
     document.getElementById('progress-bar').style.width =
       (((n + 1) / TOTAL) * 100) + '%';
-    // Buttons
     document.getElementById('btn-back').classList.toggle('hidden', n === 0);
     document.getElementById('btn-next').classList.toggle('hidden', n === TOTAL - 1);
     document.getElementById('btn-submit').classList.toggle('hidden', n !== TOTAL - 1);
-    // Hide error
     document.getElementById('step-error').classList.add('hidden');
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function validateCurrent() {
     const section = document.getElementById('section-' + current);
-    // Require height + weight on step 2 (index 1)
     if (current === 1) {
       const h = document.getElementById('height_cm').value;
       const w = document.getElementById('weight_kg').value;
@@ -393,9 +435,9 @@
   }
 
   function highlight(el) {
-    el.style.borderColor = '#8C3A28';
+    el.classList.add('field-error');
     el.focus();
-    setTimeout(() => { el.style.borderColor = ''; }, 2000);
+    setTimeout(() => el.classList.remove('field-error'), 2000);
   }
 
   function nextStep() {
@@ -428,7 +470,19 @@
     }
   }
 
-  // Boot
+  // Ripple on buttons
+  document.querySelectorAll('.btn-next, .btn-submit, .btn-back').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const r = document.createElement('span');
+      r.className = 'ripple';
+      const rect = this.getBoundingClientRect();
+      r.style.left = (e.clientX - rect.left) + 'px';
+      r.style.top  = (e.clientY - rect.top) + 'px';
+      this.appendChild(r);
+      setTimeout(() => r.remove(), 600);
+    });
+  });
+
   showStep(0);
 </script>
 

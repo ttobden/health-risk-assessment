@@ -9,25 +9,41 @@
 <body>
 
 <header class="site-header">
-  <h1>Health Risk Assessment</h1>
-  <p class="tagline">CSA203 · Group 5 · AI B</p>
+  <div class="header-bg-circles">
+    <span class="hbc hbc-1"></span>
+    <span class="hbc hbc-2"></span>
+    <span class="hbc hbc-3"></span>
+  </div>
+  <div class="header-inner">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <h1>Health Risk Assessment</h1>
+    <p class="tagline">CSA203 &middot; Group 5 &middot; AI B</p>
+  </div>
 </header>
 
 <div class="page">
 
   <a href="/" class="back-link">&#8592; New Assessment</a>
 
-  <div class="results-top">
+  <div class="results-top fade-in">
+    <div class="results-top-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
     <h1>Your Risk Assessment Results</h1>
     <p>Based on the health indicators you provided</p>
   </div>
 
-  <!-- Summary bar: one-line overview -->
-  <div class="summary-bar">
+  <!-- Summary bar -->
+  <div class="summary-bar fade-in delay-1">
     {% for key, r in results.items() %}
-    <div>
-      <div class="label">{{ r.label }}</div>
-      <div class="value" style="color: {{ r.colour }}">{{ r.tier }} Risk &mdash; {{ r.pct }}%</div>
+    <div class="summary-item">
+      <div class="summary-icon summary-icon--{{ key }}" aria-hidden="true"></div>
+      <div>
+        <div class="label">{{ r.label }}</div>
+        <div class="value" style="color: {{ r.colour }}">{{ r.tier }} Risk &mdash; {{ r.pct }}%</div>
+      </div>
     </div>
     {% endfor %}
   </div>
@@ -35,14 +51,11 @@
   <!-- Three gauge cards -->
   <div class="cards-grid">
     {% for key, r in results.items() %}
-    <div class="risk-card" style="--c-accent: {{ r.disease_colour }}">
+    <div class="risk-card fade-in delay-{{ loop.index }}" style="--c-accent: {{ r.disease_colour }}">
 
+      <div class="card-disease-icon card-disease-icon--{{ key }}" aria-hidden="true"></div>
       <p class="condition-name">{{ r.label }}</p>
 
-      <!-- SVG Circular Gauge
-           Circle r=50, cx=60, cy=60 → circumference = 314.159
-           stroke-dashoffset is animated by JS from 314.159 → 314.159*(1-pct/100)
-      -->
       <div class="gauge-wrap">
         <svg class="gauge-svg" viewBox="0 0 120 120" aria-label="{{ r.pct }}% risk">
           <circle class="gauge-track" cx="60" cy="60" r="50"/>
@@ -52,12 +65,13 @@
                   data-pct="{{ r.pct }}"/>
         </svg>
         <div class="gauge-center">
-          <span class="gauge-pct">{{ r.pct }}%</span>
+          <span class="gauge-pct" data-target="{{ r.pct }}">0%</span>
           <span class="gauge-sub">RISK SCORE</span>
         </div>
       </div>
 
       <span class="tier-badge" style="background: {{ r.colour }}">
+        {% if r.tier == 'Low' %}&#10003;{% elif r.tier == 'Moderate' %}&#9888;{% else %}&#9888;{% endif %}
         {{ r.tier }} Risk
       </span>
 
@@ -71,11 +85,33 @@
         {% endif %}
       </p>
 
+      <!-- Tip -->
+      <div class="risk-tip" style="border-color: {{ r.colour }}20; background: {{ r.colour }}08">
+        <span class="tip-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <span class="tip-text">
+          {% if key == 'diabetes' %}
+            {% if r.tier == 'Low' %}Maintain your diet score and stay active to keep risk low.
+            {% elif r.tier == 'Moderate' %}Reduce sugary foods and increase physical activity to 150+ min/week.
+            {% else %}Track fasting glucose regularly and consult an endocrinologist.{% endif %}
+          {% elif key == 'hypertension' %}
+            {% if r.tier == 'Low' %}Keep up your low-sodium habits and regular exercise.
+            {% elif r.tier == 'Moderate' %}Limit alcohol, increase aerobic activity, and monitor BP monthly.
+            {% else %}Seek medical advice promptly — sustained high BP is manageable with treatment.{% endif %}
+          {% else %}
+            {% if r.tier == 'Low' %}Heart-healthy habits like exercise and balanced diet are working.
+            {% elif r.tier == 'Moderate' %}Aim to lower LDL and maintain a healthy weight to reduce risk.
+            {% else %}Consult a cardiologist and discuss cholesterol management options.{% endif %}
+          {% endif %}
+        </span>
+      </div>
+
     </div>
     {% endfor %}
   </div>
 
-  <p class="results-note">
+  <p class="results-note fade-in delay-4">
     <strong>Disclaimer:</strong> These predictions are generated by a machine learning model trained on population-level
     health data. Results are for educational purposes only and do not constitute a medical diagnosis or professional
     medical advice. Please consult a qualified healthcare provider for personalised guidance.
@@ -84,18 +120,28 @@
 </div>
 
 <script>
-  // Animate gauge arcs on page load
-  // Circumference of circle r=50: 2π×50 = 314.159
   const CIRC = 314.159;
 
   window.addEventListener('load', () => {
+    // Animate gauge arcs
     document.querySelectorAll('.gauge-arc').forEach(arc => {
       const pct    = parseFloat(arc.dataset.pct);
       const target = CIRC * (1 - pct / 100);
-      // Small delay so CSS transition fires visibly
       requestAnimationFrame(() => {
-        setTimeout(() => { arc.style.strokeDashoffset = target; }, 80);
+        setTimeout(() => { arc.style.strokeDashoffset = target; }, 200);
       });
+    });
+
+    // Count-up animation for percentage numbers
+    document.querySelectorAll('.gauge-pct[data-target]').forEach(el => {
+      const target = parseInt(el.dataset.target, 10);
+      let current  = 0;
+      const step   = Math.max(1, Math.ceil(target / 60));
+      const timer  = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = current + '%';
+        if (current >= target) clearInterval(timer);
+      }, 20);
     });
   });
 </script>
