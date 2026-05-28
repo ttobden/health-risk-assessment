@@ -85,6 +85,12 @@ body {
   padding: 3rem 1.5rem 2.5rem;
   text-align: center;
 }
+.hero--footer {
+  border-bottom: none;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, transparent 0%, rgba(181,84,30,0.05) 100%);
+  margin-top: 1rem;
+}
 
 .hero-cards {
   display: flex;
