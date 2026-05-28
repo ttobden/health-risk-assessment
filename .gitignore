@@ -1,0 +1,10 @@
+final_data.csv
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+venv/
+*.tmp.*
+retrain.py
+.ipynb_checkpoints/

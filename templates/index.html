@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Risk Assessment</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Health Risk Assessment</h1>
+  <p class="tagline">CSA203 · Group 5 · AI B</p>
+</header>
+
+<div class="page">
+
+  <div class="disclaimer">
+    <strong>Important:</strong> This tool is for educational purposes only and does not
+    constitute medical advice. Always consult a qualified healthcare professional.
+  </div>
+
+  {% if error %}
+  <div class="error-box">&#9888; {{ error }}</div>
+  {% endif %}
+
+  <!-- ── Step indicator ─────────────────────────────── -->
+  <div class="wizard-header">
+    <div class="wizard-steps">
+      <div class="wstep active" id="wstep-0">
+        <div class="wstep-circle"><span class="wstep-num">1</span><span class="wstep-check">&#10003;</span></div>
+        <span class="wstep-label">Personal</span>
+      </div>
+      <div class="wstep-line"></div>
+      <div class="wstep" id="wstep-1">
+        <div class="wstep-circle"><span class="wstep-num">2</span><span class="wstep-check">&#10003;</span></div>
+        <span class="wstep-label">Vitals</span>
+      </div>
+      <div class="wstep-line"></div>
+      <div class="wstep" id="wstep-2">
+        <div class="wstep-circle"><span class="wstep-num">3</span><span class="wstep-check">&#10003;</span></div>
+        <span class="wstep-label">Blood Work</span>
+      </div>
+      <div class="wstep-line"></div>
+      <div class="wstep" id="wstep-3">
+        <div class="wstep-circle"><span class="wstep-num">4</span><span class="wstep-check">&#10003;</span></div>
+        <span class="wstep-label">Lifestyle</span>
+      </div>
+      <div class="wstep-line"></div>
+      <div class="wstep" id="wstep-4">
+        <div class="wstep-circle"><span class="wstep-num">5</span><span class="wstep-check">&#10003;</span></div>
+        <span class="wstep-label">History</span>
+      </div>
+    </div>
+    <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+  </div>
+
+  <form action="/predict" method="POST" id="assessment-form" novalidate>
+
+    <!-- ── Step 1: Personal Information ──────────────── -->
+    <div class="form-section" id="section-0">
+      <div class="section-head">
+        <h2>Personal Information</h2>
+      </div>
+      <div class="form-grid">
+
+        <div class="field">
+          <label for="Age">Age <span class="unit">years</span></label>
+          <input type="number" id="Age" name="Age" min="19" max="90" step="1"
+                 placeholder="e.g. 45" required>
+        </div>
+
+        <div class="field">
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender" required>
+            <option value="" disabled selected>Select...</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ethnicity">Ethnicity</label>
+          <select id="ethnicity" name="ethnicity" required>
+            <option value="" disabled selected>Select...</option>
+            <option>Asian</option>
+            <option>Black</option>
+            <option>Hispanic</option>
+            <option>White</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="education_level">Education Level</label>
+          <select id="education_level" name="education_level" required>
+            <option value="" disabled selected>Select...</option>
+            <option>No formal</option>
+            <option>Highschool</option>
+            <option>Graduate</option>
+            <option>Postgraduate</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Step 2: Vitals & Body ──────────────────────── -->
+    <div class="form-section hidden" id="section-1">
+      <div class="section-head">
+        <h2>Vitals &amp; Body</h2>
+      </div>
+      <div class="form-grid">
+
+        <!-- BMI calculator: height + weight → auto-fill hidden bmi field -->
+        <div class="field">
+          <label for="height_cm">Height <span class="unit">cm</span></label>
+          <input type="number" id="height_cm" min="100" max="220" step="0.5"
+                 placeholder="e.g. 170" oninput="calcBMI()">
+        </div>
+
+        <div class="field">
+          <label for="weight_kg">Weight <span class="unit">kg</span></label>
+          <input type="number" id="weight_kg" min="30" max="200" step="0.5"
+                 placeholder="e.g. 70" oninput="calcBMI()">
+        </div>
+
+        <!-- Read-only BMI display; hidden input carries the value -->
+        <div class="field">
+          <label>BMI <span class="unit">auto-calculated</span></label>
+          <div class="bmi-display" id="bmi-display">—</div>
+          <input type="hidden" id="bmi" name="bmi" required>
+          <input type="hidden" id="waist_to_hip_ratio" name="waist_to_hip_ratio" value="0.86">
+        </div>
+
+        <div class="field">
+          <label for="systolic_bp">Systolic BP <span class="unit">mmHg</span></label>
+          <input type="number" id="systolic_bp" name="systolic_bp"
+                 min="90" max="180" step="1" placeholder="e.g. 120" required>
+          <span class="hint">Upper blood pressure number</span>
+        </div>
+
+        <div class="field">
+          <label for="diastolic_bp">Diastolic BP <span class="unit">mmHg</span></label>
+          <input type="number" id="diastolic_bp" name="diastolic_bp"
+                 min="50" max="110" step="1" placeholder="e.g. 80" required>
+          <span class="hint">Lower blood pressure number</span>
+        </div>
+
+        <div class="field">
+          <label for="heart_rate">Heart Rate <span class="unit">bpm</span></label>
+          <input type="number" id="heart_rate" name="heart_rate"
+                 min="40" max="105" step="1" placeholder="e.g. 72" required>
+          <span class="hint">Resting beats per minute</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Step 3: Blood Work ─────────────────────────── -->
+    <div class="form-section hidden" id="section-2">
+      <div class="section-head">
+        <h2>Blood Work</h2>
+      </div>
+      <p class="section-note">Enter values from your most recent blood test.</p>
+      <div class="form-grid">
+
+        <div class="field">
+          <label for="cholesterol_total">Total Cholesterol <span class="unit">mg/dL</span></label>
+          <input type="number" id="cholesterol_total" name="cholesterol_total"
+                 min="100" max="320" step="1" placeholder="e.g. 190" required>
+          <span class="hint">Normal: &lt; 200</span>
+        </div>
+
+        <div class="field">
+          <label for="hdl_cholesterol">HDL <span class="unit">mg/dL</span></label>
+          <input type="number" id="hdl_cholesterol" name="hdl_cholesterol"
+                 min="20" max="100" step="1" placeholder="e.g. 55" required>
+          <span class="hint">Good cholesterol. Normal: &gt; 40</span>
+        </div>
+
+        <div class="field">
+          <label for="ldl_cholesterol">LDL <span class="unit">mg/dL</span></label>
+          <input type="number" id="ldl_cholesterol" name="ldl_cholesterol"
+                 min="50" max="265" step="1" placeholder="e.g. 110" required>
+          <span class="hint">Bad cholesterol. Normal: &lt; 100</span>
+        </div>
+
+        <div class="field">
+          <label for="triglycerides">Triglycerides <span class="unit">mg/dL</span></label>
+          <input type="number" id="triglycerides" name="triglycerides"
+                 min="30" max="350" step="1" placeholder="e.g. 150" required>
+          <span class="hint">Normal: &lt; 150</span>
+        </div>
+
+        <div class="field">
+          <label for="glucose_fasting">Fasting Glucose <span class="unit">mg/dL</span></label>
+          <input type="number" id="glucose_fasting" name="glucose_fasting"
+                 min="60" max="175" step="1" placeholder="e.g. 95" required>
+          <span class="hint">Before eating. Normal: 70–99</span>
+        </div>
+
+        <div class="field">
+          <label for="glucose_postprandial">Post-meal Glucose <span class="unit">mg/dL</span></label>
+          <input type="number" id="glucose_postprandial" name="glucose_postprandial"
+                 min="70" max="290" step="1" placeholder="e.g. 130" required>
+          <span class="hint">2 hrs after eating. Normal: &lt; 140</span>
+        </div>
+
+        <div class="field">
+          <label for="insulin_level">Insulin <span class="unit">&#956;U/mL</span></label>
+          <input type="number" id="insulin_level" name="insulin_level"
+                 min="2" max="33" step="0.1" placeholder="e.g. 10.0" required>
+          <span class="hint">Normal fasting: 2–25</span>
+        </div>
+
+        <div class="field">
+          <label for="hba1c">HbA1c <span class="unit">%</span></label>
+          <input type="number" id="hba1c" name="hba1c"
+                 min="4" max="10" step="0.1" placeholder="e.g. 5.6" required>
+          <span class="hint">3-month avg sugar. Normal: &lt; 5.7</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Step 4: Lifestyle ──────────────────────────── -->
+    <div class="form-section hidden" id="section-3">
+      <div class="section-head">
+        <h2>Lifestyle</h2>
+      </div>
+      <div class="form-grid">
+
+        <div class="field">
+          <label for="smoking_status">Smoking Status</label>
+          <select id="smoking_status" name="smoking_status" required>
+            <option value="" disabled selected>Select...</option>
+            <option>Never</option>
+            <option>Former</option>
+            <option>Current</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="alcohol_consumption_per_week">Alcohol <span class="unit">drinks/week</span></label>
+          <input type="number" id="alcohol_consumption_per_week" name="alcohol_consumption_per_week"
+                 min="0" max="10" step="0.5" placeholder="e.g. 2" required>
+        </div>
+
+        <div class="field">
+          <label for="physical_activity_minutes_per_week">Activity <span class="unit">min/week</span></label>
+          <input type="number" id="physical_activity_minutes_per_week"
+                 name="physical_activity_minutes_per_week"
+                 min="0" max="840" step="5" placeholder="e.g. 150" required>
+          <span class="hint">WHO recommends 150+ min</span>
+        </div>
+
+        <div class="field">
+          <label for="diet_score">Diet Score <span class="unit">0 – 10</span></label>
+          <input type="number" id="diet_score" name="diet_score"
+                 min="0" max="10" step="0.5" placeholder="e.g. 6.5" required>
+          <span class="hint">10 = very healthy diet</span>
+        </div>
+
+        <div class="field">
+          <label for="sleep_hours_per_day">Sleep <span class="unit">hours/day</span></label>
+          <input type="number" id="sleep_hours_per_day" name="sleep_hours_per_day"
+                 min="3" max="10" step="0.5" placeholder="e.g. 7" required>
+          <span class="hint">Adults need 7–9 hours</span>
+        </div>
+
+        <div class="field">
+          <label for="screen_time_hours_per_day">Screen Time <span class="unit">hours/day</span></label>
+          <input type="number" id="screen_time_hours_per_day" name="screen_time_hours_per_day"
+                 min="0.5" max="17" step="0.5" placeholder="e.g. 5" required>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Step 5: Medical History ────────────────────── -->
+    <div class="form-section hidden" id="section-4">
+      <div class="section-head">
+        <h2>Medical History</h2>
+      </div>
+      <div class="form-grid">
+
+        <div class="field">
+          <label for="family_history_diabetes">Family History of Diabetes</label>
+          <select id="family_history_diabetes" name="family_history_diabetes" required>
+            <option value="" disabled selected>Select...</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+          <span class="hint">Parent or sibling with diabetes</span>
+        </div>
+
+        <div class="field">
+          <label for="hypertension_history">High Blood Pressure History</label>
+          <select id="hypertension_history" name="hypertension_history" required>
+            <option value="" disabled selected>Select...</option>
+            <option value="1">Yes — diagnosed</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="cardiovascular_history">Heart or Vascular Condition</label>
+          <select id="cardiovascular_history" name="cardiovascular_history" required>
+            <option value="" disabled selected>Select...</option>
+            <option value="1">Yes — diagnosed</option>
+            <option value="0">No</option>
+          </select>
+          <span class="hint">Heart attack, stroke, etc.</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Validation error ───────────────────────────── -->
+    <p class="step-error hidden" id="step-error">
+      &#9888; Please complete all fields before continuing.
+    </p>
+
+    <!-- ── Navigation buttons ────────────────────────── -->
+    <div class="wizard-nav">
+      <button type="button" class="btn-back hidden" id="btn-back" onclick="prevStep()">
+        &larr; Back
+      </button>
+      <button type="button" class="btn-next" id="btn-next" onclick="nextStep()">
+        Next &rarr;
+      </button>
+      <button type="submit" class="btn-submit hidden" id="btn-submit">
+        Assess My Risk &rarr;
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  let current = 0;
+  const TOTAL = 5;
+
+  function showStep(n) {
+    // Sections
+    document.querySelectorAll('.form-section').forEach((s, i) => {
+      s.classList.toggle('hidden', i !== n);
+    });
+    // Step indicators
+    document.querySelectorAll('.wstep').forEach((s, i) => {
+      s.classList.remove('active', 'completed');
+      if (i === n)      s.classList.add('active');
+      if (i < n)        s.classList.add('completed');
+    });
+    // Lines
+    document.querySelectorAll('.wstep-line').forEach((l, i) => {
+      l.classList.toggle('completed', i < n);
+    });
+    // Progress bar
+    document.getElementById('progress-bar').style.width =
+      (((n + 1) / TOTAL) * 100) + '%';
+    // Buttons
+    document.getElementById('btn-back').classList.toggle('hidden', n === 0);
+    document.getElementById('btn-next').classList.toggle('hidden', n === TOTAL - 1);
+    document.getElementById('btn-submit').classList.toggle('hidden', n !== TOTAL - 1);
+    // Hide error
+    document.getElementById('step-error').classList.add('hidden');
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validateCurrent() {
+    const section = document.getElementById('section-' + current);
+    // Require height + weight on step 2 (index 1)
+    if (current === 1) {
+      const h = document.getElementById('height_cm').value;
+      const w = document.getElementById('weight_kg').value;
+      const b = document.getElementById('bmi').value;
+      if (!h || !w || !b) {
+        highlight(document.getElementById('height_cm'));
+        highlight(document.getElementById('weight_kg'));
+        return false;
+      }
+    }
+    const fields = section.querySelectorAll('input[required], select[required]');
+    let ok = true;
+    fields.forEach(f => {
+      if (!f.value.trim()) { highlight(f); ok = false; }
+    });
+    return ok;
+  }
+
+  function highlight(el) {
+    el.style.borderColor = '#8C3A28';
+    el.focus();
+    setTimeout(() => { el.style.borderColor = ''; }, 2000);
+  }
+
+  function nextStep() {
+    if (!validateCurrent()) {
+      document.getElementById('step-error').classList.remove('hidden');
+      return;
+    }
+    if (current < TOTAL - 1) { current++; showStep(current); }
+  }
+
+  function prevStep() {
+    if (current > 0) { current--; showStep(current); }
+  }
+
+  function calcBMI() {
+    const h = parseFloat(document.getElementById('height_cm').value);
+    const w = parseFloat(document.getElementById('weight_kg').value);
+    const display = document.getElementById('bmi-display');
+    const hidden  = document.getElementById('bmi');
+    if (h > 0 && w > 0) {
+      const bmi = (w / Math.pow(h / 100, 2)).toFixed(1);
+      hidden.value = bmi;
+      const cat = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+      display.textContent = bmi + ' — ' + cat;
+      display.style.color = bmi < 18.5 || bmi >= 30 ? '#8C3A28' : bmi >= 25 ? '#8C6820' : '#4A7040';
+    } else {
+      hidden.value = '';
+      display.textContent = '—';
+      display.style.color = '';
+    }
+  }
+
+  // Boot
+  showStep(0);
+</script>
+
+</body>
+</html>
